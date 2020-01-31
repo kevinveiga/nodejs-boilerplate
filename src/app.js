@@ -1,25 +1,51 @@
+import axios from 'axios';
 import express from 'express';
 import http from 'http';
 import socketIo from 'socket.io';
 
-import { config } from './config.js';
+import { pathPublic, port } from './config.js';
 
 const app = express();
 const server = http.createServer(app);
 const io = socketIo(server);
 
-app.use(express.static(config.path.public));
+const router = express.Router();
+
+const getApi = async (socket) => {
+    try {
+        const result = await axios.get('https://api.infomoney.com.br/ativos/ticker?type=json&_=1143');
+
+        socket.emit('msg', JSON.stringify(result.data));
+    } catch (error) {
+        console.error(`Error: ${error.code}`);
+    }
+};
+
+let interval = null;
+
+app.use(express.static(pathPublic));
 
 app.get('/', (req, res) => {
     res.sendFile(__dirname + '/index.html');
 });
 
+router.get('/', (req, res) => {
+    res.send({ response: 'yes' }).status(200);
+});
+
 io.on('connection', (socket) => {
-    console.log('path: ', config.path.public);
+    console.log('log new user connected');
 
-    console.log('log a user connected');
+    if (interval) {
+        clearInterval(interval);
+    }
 
-    socket.broadcast.emit('user connected');
+    interval = setInterval(() => {
+        console.log('interval');
+        getApi(socket);
+    }, 3000);
+
+    socket.broadcast.emit('new user connected');
 
     socket.on('msg', (msg) => {
         console.log('msg: ' + msg);
@@ -32,7 +58,8 @@ io.on('connection', (socket) => {
     });
 
     socket.on('disconnect', () => {
-        io.emit('user disconnected');
+        console.log('User disconnect');
+        clearInterval(interval);
     });
 });
 
@@ -54,7 +81,7 @@ const news = io.of('/news').on('connection', (socket) => {
 });
 
 const onConnect = (socket) => {
-    console.log('log a user connect');
+    console.log('User Connected');
 
     // sending to the client
     socket.emit('msg', 'can you hear me?', 1, 2, 'abc');
@@ -109,7 +136,7 @@ const onConnect = (socket) => {
 
 io.on('connect', onConnect);
 
-// Don't use like event name
+// Don't use to event name
 // error
 // connect
 // disconnect
@@ -119,6 +146,6 @@ io.on('connect', onConnect);
 // ping
 // pong
 
-server.listen(config.port, () => {
-    console.log(`listening on *:${config.port}`);
+server.listen(port, () => {
+    console.log(`listening on *:${port}`);
 });
