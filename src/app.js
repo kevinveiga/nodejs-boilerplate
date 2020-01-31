@@ -9,6 +9,27 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIo(server);
 
+// CONFIG
+app.use(express.static(pathPublic));
+
+app.use((req, res, next) => {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET');
+    res.setHeader('Access-Control-Allow-Headers', 'content-type');
+    res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Access-Control-Allow-Credentials', true);
+
+    next();
+});
+
+app.get('/', (req, res) => {
+    res.sendFile(__dirname + '/index.html');
+});
+
+// VARIABLE
+let interval = null;
+
+// FUNCTION
 const getApi = async (socket) => {
     try {
         const result = await axios.get('https://api.infomoney.com.br/ativos/ticker?type=json&_=1143');
@@ -18,14 +39,6 @@ const getApi = async (socket) => {
         console.error(`Error: ${error.code}`);
     }
 };
-
-let interval = null;
-
-app.use(express.static(pathPublic));
-
-app.get('/', (req, res) => {
-    res.sendFile(__dirname + '/index.html');
-});
 
 io.on('connection', (socket) => {
     console.log('log new user connected');
