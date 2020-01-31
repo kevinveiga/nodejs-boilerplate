@@ -9,8 +9,6 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIo(server);
 
-const router = express.Router();
-
 const getApi = async (socket) => {
     try {
         const result = await axios.get('https://api.infomoney.com.br/ativos/ticker?type=json&_=1143');
@@ -29,10 +27,6 @@ app.get('/', (req, res) => {
     res.sendFile(__dirname + '/index.html');
 });
 
-router.get('/', (req, res) => {
-    res.send({ response: 'yes' }).status(200);
-});
-
 io.on('connection', (socket) => {
     console.log('log new user connected');
 
@@ -45,8 +39,6 @@ io.on('connection', (socket) => {
         getApi(socket);
     }, 3000);
 
-    socket.broadcast.emit('new user connected');
-
     socket.on('msg', (msg) => {
         console.log('msg: ' + msg);
         io.emit('msg', 'Olá no caso do msg');
@@ -58,8 +50,9 @@ io.on('connection', (socket) => {
     });
 
     socket.on('disconnect', () => {
-        console.log('User disconnect');
         clearInterval(interval);
+
+        console.log('User disconnect');
     });
 });
 
