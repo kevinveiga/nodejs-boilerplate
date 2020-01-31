@@ -1,3 +1,3 @@
-const path = require('path');
+import path from 'path';
 
-module.exports = { path: { public: path.join(__dirname, '/../public') }, port: process.env.PORT || 3000 };
+export const config = { path: { public: path.join(__dirname, '/../public') }, port: process.env.PORT || 3000 };
