@@ -1,14 +1,19 @@
-const app = require('express')();
+const express = require('express');
+const app = express();
 const server = require('http').createServer(app);
 const io = require('socket.io')(server);
 
 const config = require('./config.js');
+
+app.use(express.static(config.path.public));
 
 app.get('/', (req, res) => {
     res.sendFile(__dirname + '/index.html');
 });
 
 io.on('connection', (socket) => {
+    console.log('path: ', config.path.public);
+
     console.log('log a user connected');
 
     socket.broadcast.emit('user connected');
