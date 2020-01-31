@@ -40,6 +40,7 @@ const getApi = async (socket) => {
     }
 };
 
+// SOCKET
 io.on('connection', (socket) => {
     console.log('log new user connected');
 
