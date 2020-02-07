@@ -63,10 +63,16 @@ io.on('connection', (socket) => {
         fn(msg + ' says ' + other);
     });
 
-    socket.on('disconnect', () => {
-        clearInterval(interval);
+    socket.on('disconnect', (reason) => {
+        console.info('User disconnect: ', reason);
+    });
 
-        console.log('User disconnect');
+    socket.on('disconnecting', (reason) => {
+        console.info('User disconnecting: ', reason);
+    });
+
+    socket.on('error', (error) => {
+        console.error('error: ', error);
     });
 });
 
