@@ -52,6 +52,15 @@ const getApi = async (socket) => {
 //     return next(new Error('authentication error'));
 // });
 
+// Origins
+// io.origins((origin, callback) => {
+//     if (origin !== 'https://foo.example.com') {
+//         return callback('origin not allowed', false);
+//     }
+
+//     return callback(null, true);
+// });
+
 io.on('connection', (socket) => {
     console.log('log new user connected');
 
