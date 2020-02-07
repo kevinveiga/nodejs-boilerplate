@@ -41,6 +41,17 @@ const getApi = async (socket) => {
 };
 
 // SOCKET
+// Middleware
+// io.use((socket, next) => {
+//     let token = socket.handshake.query.token;
+
+//     if (isValid(token)) {
+//         return next();
+//     }
+
+//     return next(new Error('authentication error'));
+// });
+
 io.on('connection', (socket) => {
     console.log('log new user connected');
 
