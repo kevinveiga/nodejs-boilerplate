@@ -1,13 +1,38 @@
+// Lib
 import axios from 'axios';
-import express from 'express';
+import { cacheAdapterEnhancer } from 'axios-extensions';
+
+// Node
 import http from 'http';
+import path from 'path';
+
+// Server
+import express from 'express';
+
+// Socket
 import socketIo from 'socket.io';
 
+// Config
 import { pathPublic, port } from './config.js';
 
+// VARIABLE
 const app = express();
 const server = http.createServer(app);
 const io = socketIo(server);
+
+const apiCache1Day = axios.create({
+    adapter: cacheAdapterEnhancer(axios.defaults.adapter, { maxAge: 1000 * 60 * 60 * 24, max: 1000 }),
+    baseURL: '/',
+    headers: { 'Cache-Control': 'no-cache' }
+});
+
+const apiCache30Day = axios.create({
+    adapter: cacheAdapterEnhancer(axios.defaults.adapter, { maxAge: 1000 * 60 * 60 * 24 * 30, max: 300000000 }),
+    baseURL: '/',
+    headers: { 'Cache-Control': 'no-cache' }
+});
+
+let interval = null;
 
 // CONFIG
 app.use(express.static(pathPublic));
@@ -22,12 +47,10 @@ app.use((req, res, next) => {
     next();
 });
 
+// GET
 app.get('/', (req, res) => {
-    res.sendFile(__dirname + '/index.html');
+    res.sendFile(path.join(__dirname, '/index.html'));
 });
-
-// VARIABLE
-let interval = null;
 
 // FUNCTION
 const getApi = async (socket) => {
@@ -70,17 +93,19 @@ io.on('connection', (socket) => {
 
     interval = setInterval(() => {
         console.log('interval');
+
         getApi(socket);
     }, 3000);
 
     socket.on('msg', (msg) => {
-        console.log('msg: ' + msg);
+        console.log(`msg: ${msg}`);
+
         io.emit('msg', 'Olá no caso do msg');
     });
 
     socket.on('msgCallback', (msg, other, fn) => {
-        console.log('msgCallback: ' + msg);
-        fn(msg + ' says ' + other);
+        console.log(`msgCallback: ${msg}`);
+        fn(`${msg} says ${other}`);
     });
 
     socket.on('disconnect', (reason) => {
@@ -123,13 +148,13 @@ const onConnect = (socket) => {
     socket.broadcast.emit('broadcast', 'hello friends!');
 
     // sending to all clients in 'game' room except sender
-    socket.to('game').emit('nice game', "let's play a game");
+    socket.to('game').emit('nice game', 'lets play a game');
 
     // sending to all clients in 'game1' and/or in 'game2' room, except sender
     socket
         .to('game1')
         .to('game2')
-        .emit('nice game', "let's play a game (too)");
+        .emit('nice game', 'lets play a game (too)');
 
     // sending to all clients in 'game' room, including sender
     io.in('game').emit('big-announcement', 'the game will start soon');
@@ -149,10 +174,12 @@ const onConnect = (socket) => {
     // named `socket.id` but the sender. Please use the classic `socket.emit()` instead.
 
     // sending with acknowledgement
-    socket.emit('question', 'do you think so?', function(answer) {});
+    socket.emit('question', 'do you think so?', (answer) => {
+        return null;
+    });
 
     // sending without compression
-    socket.compress(false).emit('uncompressed', "that's rough");
+    socket.compress(false).emit('uncompressed', 'thats rough');
 
     // sending a message that might be dropped if the client is not ready to receive messages
     socket.volatile.emit('maybe', 'do you really need it?');
