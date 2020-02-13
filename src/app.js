@@ -217,14 +217,14 @@ const onConnect = (socket) => {
 io.on('connect', onConnect);
 
 // Don't use to event name
-// error
 // connect
+// error
 // disconnect
 // disconnecting
 // newListener
-// removeListener
 // ping
 // pong
+// removeListener
 
 server.listen(port, () => {
     console.log(`listening on *:${port}`);
