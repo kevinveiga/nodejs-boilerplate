@@ -63,6 +63,15 @@ const getApi = async (socket) => {
     }
 };
 
+const getInfo = () => {
+    console.log(`Running in: ${process.env.NODE_ENV}`);
+
+    const today = new Date();
+    const dateTime = `${today.getHours()}:${today.getMinutes()}:${today.getSeconds()} - ${today.getDate()}/${today.getMonth() + 1}/${today.getFullYear()}`;
+
+    console.log(`Log: get API in ${dateTime}`);
+};
+
 // SOCKET
 // Middleware
 // io.use((socket, next) => {
@@ -85,48 +94,51 @@ const getApi = async (socket) => {
 // });
 
 io.on('connection', (socket) => {
-    console.log('log new user connected');
+    try {
+        console.log('Log: new user connected');
 
-    if (interval) {
-        clearInterval(interval);
-    }
-
-    // Intervalo a cada 1 minuto
-    interval = setInterval(() => {
-        console.clear();
-
-        console.log(`Running in: ${process.env.NODE_ENV}`);
-
-        const today = new Date();
-        const dateTime = `${today.getHours()}:${today.getMinutes()}:${today.getSeconds()} - ${today.getDate()}/${today.getMonth() + 1}/${today.getFullYear()}`;
-
-        console.log(`Log: get API in ${dateTime}`);
+        getInfo();
 
         getApi(socket);
-    }, 60000);
 
-    socket.on('msg', (msg) => {
-        console.log(`msg: ${msg}`);
+        if (interval) {
+            clearInterval(interval);
+        }
 
-        io.emit('msg', 'Olá no caso do msg');
-    });
+        // Intervalo a cada 1 minuto
+        interval = setInterval(() => {
+            console.clear();
 
-    socket.on('msgCallback', (msg, other, fn) => {
-        console.log(`msgCallback: ${msg}`);
-        fn(`${msg} says ${other}`);
-    });
+            getInfo();
 
-    socket.on('disconnect', (reason) => {
-        console.info('User disconnect: ', reason);
-    });
+            getApi(socket);
+        }, 60000);
 
-    socket.on('disconnecting', (reason) => {
-        console.info('User disconnecting: ', reason);
-    });
+        socket.on('msg', (msg) => {
+            console.log(`msg: ${msg}`);
 
-    socket.on('error', (error) => {
-        console.error('error: ', error);
-    });
+            io.emit('msg', 'Olá no caso do msg');
+        });
+
+        socket.on('msgCallback', (msg, other, fn) => {
+            console.log(`msgCallback: ${msg}`);
+            fn(`${msg} says ${other}`);
+        });
+
+        socket.on('disconnect', (reason) => {
+            console.info('User disconnect: ', reason);
+        });
+
+        socket.on('disconnecting', (reason) => {
+            console.info('User disconnecting: ', reason);
+        });
+
+        socket.on('error', (error) => {
+            console.error('Error: ', error);
+        });
+    } catch (error) {
+        console.error('Error: ', error);
+    }
 });
 
 // Namespace "chat"
