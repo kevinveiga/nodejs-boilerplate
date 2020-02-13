@@ -91,11 +91,19 @@ io.on('connection', (socket) => {
         clearInterval(interval);
     }
 
+    // Intervalo a cada 1 minuto
     interval = setInterval(() => {
-        console.log('interval');
+        console.clear();
+
+        console.log(`Running in: ${process.env.NODE_ENV}`);
+
+        const today = new Date();
+        const dateTime = `${today.getHours()}:${today.getMinutes()}:${today.getSeconds()} - ${today.getDate()}/${today.getMonth() + 1}/${today.getFullYear()}`;
+
+        console.log(`Log: get API in ${dateTime}`);
 
         getApi(socket);
-    }, 3000);
+    }, 60000);
 
     socket.on('msg', (msg) => {
         console.log(`msg: ${msg}`);
