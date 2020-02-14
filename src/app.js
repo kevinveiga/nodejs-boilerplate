@@ -105,7 +105,7 @@ io.on('connection', (socket) => {
             clearInterval(interval);
         }
 
-        // Intervalo a cada 1 minuto
+        // Intervalo de 1 minuto
         interval = setInterval(() => {
             console.clear();
 
