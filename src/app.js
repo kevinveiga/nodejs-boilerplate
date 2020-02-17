@@ -1,3 +1,4 @@
+// IMPORT
 // Lib
 import axios from 'axios';
 import { cacheAdapterEnhancer } from 'axios-extensions';
@@ -13,7 +14,7 @@ import express from 'express';
 import socketIo from 'socket.io';
 
 // Config
-import { pathPublic, port } from './config.js';
+import { config } from './config.js';
 
 // VARIABLE
 const app = express();
@@ -35,7 +36,7 @@ const apiCache1Day = axios.create({
 let interval = null;
 
 // CONFIG
-app.use(express.static(pathPublic));
+app.use(express.static(config.pathPublic));
 
 app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -304,6 +305,6 @@ io.on('connect', onConnect);
 // pong
 // removeListener
 
-server.listen(port, () => {
-    console.log(`listening on *:${port}`);
+server.listen(config.port, () => {
+    console.log(`listening on *:${config.port}`);
 });

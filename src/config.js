@@ -1,5 +1,14 @@
+import dotenv from 'dotenv';
+
 import path from 'path';
 
-export const pathPublic = path.join(__dirname, '/../public');
+// ENV FILE
+dotenv.config({
+    path: `./.env.${process.env.NODE_ENV}`
+});
 
-export const port = process.env.PORT || 3000;
+export const config = {
+    cors: process.env.CORS,
+    pathPublic: path.join(__dirname, '/../public'),
+    port: process.env.PORT
+};
