@@ -143,8 +143,6 @@ const getApis = async (socket) => {
 };
 
 const getInfo = () => {
-    console.log(`Running in: ${process.env.NODE_ENV}`);
-
     const today = new Date();
     const dateTime = `${today.getHours()}:${today.getMinutes()}:${today.getSeconds()} - ${today.getDate()}/${today.getMonth() + 1}/${today.getFullYear()}`;
 
