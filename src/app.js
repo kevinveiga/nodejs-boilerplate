@@ -5,9 +5,9 @@ import { cacheAdapterEnhancer } from 'axios-extensions';
 
 // Node
 import http from 'http';
-import path from 'path';
 
 // Server
+import cors from 'cors';
 import express from 'express';
 
 // Socket
@@ -20,6 +20,17 @@ import { config } from './config.js';
 const app = express();
 const server = http.createServer(app);
 const io = socketIo(server);
+
+const corsOptions = {
+    origin: (origin, callback) => {
+        if (JSON.parse(config.cors) && origin !== config.corsUrl) {
+            return callback('Origin not allowed', false);
+        }
+
+        return callback(null, true);
+    },
+    optionsSuccessStatus: 200
+};
 
 const apiCache1Day = axios.create({
     adapter: cacheAdapterEnhancer(axios.defaults.adapter, { maxAge: 1000 * 60 * 60 * 24, max: 1000 }),
@@ -36,10 +47,10 @@ const apiCache1Day = axios.create({
 let interval = null;
 
 // CONFIG
-app.use(express.static(config.pathPublic));
+// app.use(express.static(config.pathPublic));
 
 app.use((req, res, next) => {
-    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Origin', JSON.parse(config.cors) ? config.corsUrl : '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET');
     res.setHeader('Access-Control-Allow-Headers', 'content-type');
     res.setHeader('Content-Type', 'application/json');
@@ -49,8 +60,9 @@ app.use((req, res, next) => {
 });
 
 // GET
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, '/index.html'));
+app.get('/', cors(corsOptions), (req, res) => {
+    res.json({ msg: 'Micro Serviço - Cotações' });
+    // res.sendFile(path.join(__dirname, '../public/index.html'));
 });
 
 // FUNCTION
@@ -142,11 +154,11 @@ const getApis = async (socket) => {
     }
 };
 
-const getInfo = () => {
+const getDateTime = () => {
     const today = new Date();
     const dateTime = `${today.getHours()}:${today.getMinutes()}:${today.getSeconds()} - ${today.getDate()}/${today.getMonth() + 1}/${today.getFullYear()}`;
 
-    console.log(`Log: get API in ${dateTime}`);
+    return dateTime;
 };
 
 // SOCKET
@@ -162,19 +174,20 @@ const getInfo = () => {
 // });
 
 // Origins
-// io.origins((origin, callback) => {
-//     if (origin !== 'https://foo.example.com') {
-//         return callback('origin not allowed', false);
-//     }
+io.origins((origin, callback) => {
+    console.log(`Origin: ${origin} - ${getDateTime()}`);
+    console.log(`Env corsUrl: ${config.corsUrl} - ${getDateTime()}`);
 
-//     return callback(null, true);
-// });
+    if (JSON.parse(config.cors) && origin !== config.corsUrl) {
+        return callback('Origin not allowed', false);
+    }
+
+    return callback(null, true);
+});
 
 io.on('connection', (socket) => {
     try {
-        console.log('Log: new user connected');
-
-        getInfo();
+        console.log(`Log: new user connected - ${getDateTime()}`);
 
         getApis(socket);
 
@@ -186,7 +199,7 @@ io.on('connection', (socket) => {
         interval = setInterval(() => {
             console.clear();
 
-            getInfo();
+            console.log(`Log: get API in ${getDateTime()}`);
 
             getApis(socket);
         }, 60000);
